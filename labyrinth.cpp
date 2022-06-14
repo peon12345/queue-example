@@ -4,15 +4,14 @@
 
 Labyrinth::Labyrinth()
 {
-    initWalls();
+  initWalls();
 }
 
 bool Labyrinth::startTest(SubjectLabyrinth& subject)
 {
   while(subject.move()){
-  subject.setVisibleArea();
-
-  }
+      subject.setVisibleArea(visibleArea(subject.posX(),subject.posY()));
+    }
 
 
 
@@ -36,11 +35,21 @@ void Labyrinth::initWalls()
 VisibleArea Labyrinth::visibleArea(int x, int y)
 {
   int visibleUp = 0;
+  int visibleDown = 0;
+  int visibleRight = 0;
+  int visibleLeft = 0;
 
-  std::string line = m_walls.at(y+1);
-  if(line.at(x) == ' '){
+  for(size_t i = 0; i < m_walls.size(); ++i){
 
-  }
+      std::string line = m_walls.at(y+1);
+
+      if(line.at(x) == ' '){
+          visibleUp++;
+        }
+
+
+
+    }
 
 }
 

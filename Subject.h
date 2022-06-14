@@ -3,31 +3,31 @@
 
 #include <queue>
 enum class Movement {
-    UP,
-    DOWN,
-    RIGHT,
-    LEFT
+  UP,
+  DOWN,
+  RIGHT,
+  LEFT
 };
 
 struct VisibleArea{
-int up;
-int down;
-int right;
-int left;
+  int up;
+  int down;
+  int right;
+  int left;
 };
 
 class SubjectLabyrinth {
 public:
- virtual bool move() = 0;
+  virtual bool move() = 0;
 
- void setRoute(const std::queue<Movement>& route);
- void setVisibleArea(const VisibleArea& area);
- bool isRun();
+  void setRoute(const std::queue<Movement>& route);
+  void setVisibleArea(const VisibleArea& area);
+  bool isRun();
 
- int posX() const;
- int posY() const;
+  int posX() const;
+  int posY() const;
 
- virtual ~SubjectLabyrinth();
+  virtual ~SubjectLabyrinth();
 protected:
   std::queue<Movement> m_route;
   VisibleArea m_visibleArea;
