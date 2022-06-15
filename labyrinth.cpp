@@ -3,80 +3,91 @@
 #include <functional>
 #include <algorithm>
 #include <stdlib.h>
+#include <windows.h>
 
-Labyrinth::Labyrinth()
+Labyrinth::Labyrinth() : oldPosSubjectX(0), oldPosSubjectY(0)
 {
-  initWalls();
+  initWalls();       //строим стены лабиринта
+  setTrap(43,5);     //рисуем ловушку
 }
 
-bool Labyrinth::startTest(SubjectLabyrinth& subject)
+void Labyrinth::start(SubjectLabyrinth& subject)
 {
-  subject.setX(startX);
+  subject.setX(startX); //устанавливаем в стартовую позицию объект
   subject.setY(startY);
 
-  show(&subject);
+  do{
+      show(&subject); //рисуем объект с лабиринтом на экране
+      subject.setMoveOptions(getMoveOptions(subject.posX(),subject.posY())); // передаем возможные ходы в лабиринте
+                                                                             // исходя из текущей позиции объекта
+      Sleep(500);                                                            // ждем пол секунды, для наглядности отображения перемещения
 
-  while(subject.move()){
-      subject.setVisibleArea(visibleArea(subject.posX(),subject.posY()));
-      show(&subject);
-    }
+    }while(subject.move());                                                 // перемещаем объект, пока объект не вернет статус ошибки
 
-  // поз меняется
-  // лабиринт смотрит
-  // лабиринт говорит давай другой моемент
 }
 
 void Labyrinth::show(const SubjectLabyrinth* subject)
 {
-
   system ("CLS");
   for(size_t i = 0 ; i < m_walls.size(); ++i){
 
       if(subject){
-      if(subject->posY() == i)
-        std::replace(m_walls.at(i).begin()+subject->posX(),m_walls.at(i).begin()+subject->posX() + 1, ' ' , subject->getSym() );
+
+
+          //очистка объекта с экрана, чтобы нарисовать его в новой позиции
+          if(  oldPosSubjectX || oldPosSubjectY ){
+             std::replace(m_walls.at(oldPosSubjectY).begin()+oldPosSubjectX,m_walls.at(oldPosSubjectY).begin()+oldPosSubjectX + 1, subject->getSym() , ' ' );
+            }
+
+          //рисуем объект в лабиринте и сохраняем его позицию
+          //чтобы удалить его при следующем перемещении объекта
+          if(subject->posY() == i){
+
+            oldPosSubjectX = subject->posX();
+            oldPosSubjectY = subject->posY();
+
+            std::replace(m_walls.at(i).begin()+subject->posX(),m_walls.at(i).begin()+subject->posX() + 1, ' ' , subject->getSym() );
+            }
         }
 
-      std::cout << m_walls.at(i);
+      std::cout << m_walls.at(i); //рисуем стену лабиринта
       std::cout << std::endl;
 
     }
 
 }
 
-void Labyrinth::initWalls()
+void Labyrinth::initWalls() //строим стены и запоминаем позиции старта и финиша
 {
   startX = 3;
   startY = 0;
 
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,3);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,1);
   addWall(3,45);
-  addWall(25,3);
-  addWall(25,3);
-  addWall(25,3);
-  addWall(25,3);
-  addWall(3,25);
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,3);
-  addWall(3,35);
-  addWall(35,3);
-  addWall(35,3);
+  addWall(25,1);
+  addWall(25,1);
+  addWall(25,1);
+  addWall(25,1);
+  addWall(3,23);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,1);
+  addWall(3,33);
+  addWall(35,1);
+  addWall(35,1);
 
   finishX = 35;
   finishY = 18;
 
-  setTrap(43,5);
-
 }
 
-void Labyrinth::addWall(int posHole, int lenghtHole)
+void Labyrinth::addWall(int posHole, int lenghtHole) //добавление стены
 {
   static std::string wall(WALL_LENGHT,WALL_SYM);
 
@@ -85,86 +96,71 @@ void Labyrinth::addWall(int posHole, int lenghtHole)
   std::replace(wall.begin()+posHole, wall.begin()+posHole+lenghtHole, ' ', '#');
 }
 
-bool Labyrinth::isValidPos(size_t x, size_t y)
+bool Labyrinth::isValidPos(size_t x, size_t y) //проверка на корректность позиции объекта
 {
-  return ((x > 0 && y > 0 )  &&
-          (x < m_walls.size() && y < WALL_LENGHT ));
+  return (x < m_walls.size() && y < WALL_LENGHT  );
+
 
 }
 
-VisibleArea Labyrinth::visibleArea(size_t x, size_t y)
-{
+MoveOptions Labyrinth::getMoveOptions(int x, int y) // получаем возможные ходы в лабиринте
+{                                                   // исходя из позиции в лабиринте
 
   isValidPos(x,y);
 
-  size_t visibleUp = 0;
-  size_t visibleDown = 0;
+  bool up;
+  bool down;
+  bool right;
+  bool left;
 
-  bool visibleUpCount = true;
-  bool visibleDownCount = true;
-
-  for(size_t i = 0; i < m_walls.size(); ++i){
-
-      if(visibleUpCount){
-          if(m_walls.size() > (y + visibleUp +1)){
-              std::string line = m_walls.at(y+ visibleUp + 1 );
-              if(line.at(x) == ' '){
-                  visibleUp++;
-                }else{
-                  visibleUpCount = false;
-                }
-            }
-        }
-
-      if(visibleDownCount){
-          if(0 >= (y - visibleDown -1)){
-              std::string line = m_walls.at(y - visibleDown - 1 );
-              if(line.at(x) == ' '){
-                  visibleDown++;
-                }else{
-                  visibleDownCount = false;
-                }
-            }
-        }
-
-    }
-
-  size_t visibleRight = 0;
-  size_t visibleLeft = 0;
-
-  std::string line = m_walls.at(y);
-  if(x < line.length() ) {
-
-
-      for(size_t i = x-1; i >= 0 ; --i){
-
-          if(line.at(i) == ' '){
-              visibleLeft++;
-            }else{
-              break;
-            }
-        }
+  if(y+1 < m_walls.size()){
+      if( m_walls.at(y+1).at(x) == ' ')
+        down = true;
+      else
+        down = false;
+    }else{
+      down = false;
     }
 
 
-  for(size_t i = x+1; i < line.length() ; ++i){
-
-      if(line.at(i) == ' '){
-          visibleRight++;
-        }else{
-          break;
-        }
+  if(y - 1 >= 0) {
+      if( m_walls.at(y-1).at(x) == ' ')
+        up = true;
+      else
+        up = false;
+    }else{
+      up = false;
     }
 
+  if( WALL_LENGHT > x + 1 ){
 
-  return VisibleArea{visibleUp,visibleDown,visibleRight,visibleLeft};
+      if(m_walls.at(y).at(x+1) == ' ')
+        right = true;
+      else
+        right = false;
+    }else{
+      right = false;
+    }
 
+  if(x -1 >= 0){
+      if(m_walls.at(y).at(x-1) == ' ')
+        left = true;
+      else
+        left = false;
+
+    }else{
+      left = false;
+    }
+
+  return MoveOptions{up,down,right,left};
 }
 
-void Labyrinth::setTrap(size_t x, size_t y)
+
+
+void Labyrinth::setTrap(size_t x, size_t y) //рисуем ловушку в лабиринте
 {
   if(y < m_walls.size() && x < WALL_LENGHT){
-     std::replace( m_walls.at(y).begin()+x , m_walls.at(y).begin()+x+1, ' ', '&');
+      std::replace( m_walls.at(y).begin()+x , m_walls.at(y).begin()+x+1, ' ', '&');
     }
 }
 

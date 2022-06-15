@@ -10,14 +10,14 @@ size_t SubjectLabyrinth::posY() const
     return m_posY;
 }
 
-void SubjectLabyrinth::setRoute(const std::queue<Movement> &route)
+void SubjectLabyrinth::setRoute(const std::queue<Movement> &route) // установка маршрута
 {
-
+ m_route = route;
 }
 
-void SubjectLabyrinth::setVisibleArea(const VisibleArea &area)
+void SubjectLabyrinth::setMoveOptions(const MoveOptions &moveOptions) //установка возможных ходов
 {
-  m_visibleArea = area;
+  m_moveOptions = moveOptions;
 }
 
 void SubjectLabyrinth::setX(size_t x)
@@ -30,3 +30,20 @@ void SubjectLabyrinth::setY(size_t y)
   m_posY = y;
 }
 
+
+int MoveOptions::numberPaths() const // подсчитать кол-во возможных ходов
+{
+  int result = 0;
+
+  if(up)
+    result++;
+  if(down)
+    result++;
+  if(right)
+    result++;
+  if(left)
+    result++;
+
+
+  return result;
+}

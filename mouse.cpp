@@ -1,55 +1,57 @@
 #include "mouse.h"
+#include <iostream>
 
-
-bool Mouse::move()
+bool Mouse::move() // перемещение по лабиринту
 {
-  if(!m_route.empty()){
-  return false;
-  }
+  if(m_route.empty()){ //если очередь маршрутов пуста, возвращаем 0
+      return false;
+    }
 
+  if(m_moveOptions.numberPaths() >= 3){ //если появился новый путь движения
+      m_route.pop();                    //чтобы узнать в какую сторону идти
+    }                                   //переходим к следующему элементу в очереди
 
-  Movement directionMovement = m_route.front();
+  while (!m_route.empty()) {
 
-  switch (directionMovement) {
+      Movement directionMovement = m_route.front(); // получаем направление движения
 
-  case Movement::UP:
-      if(m_visibleArea.up){
+      switch (directionMovement) {                 //в зависимости от направления движения
 
-       m_visibleArea.up--;
-       m_posX++;
-       return true;
-      }
-      break;
+        case Movement::DOWN:                       //меняем позицию у объекта
+          if(m_moveOptions.down){
+              m_posY++;
+              return true;
+            }
+          break;
 
-  case Movement::DOWN:
-      if(m_visibleArea.down){
-      m_visibleArea.down--;
-      m_posX++;
-
-      return true;
-      }
-      break;
-  case Movement::RIGHT:
-      if(m_visibleArea.right){
-      m_visibleArea.right--;
-      m_posX++;
-      return true;
+        case Movement::UP:
+          if(m_moveOptions.up){
+              m_posY--;
+              return true;
+            }
+          break;
+        case Movement::RIGHT:
+          if(m_moveOptions.right){
+              m_posX++;
+              return true;
+            }
+          break;
+        case Movement::LEFT:
+          if(m_moveOptions.left){
+              m_posX--;
+              return true;
+            }
+          break;
         }
-      break;
-  case Movement::LEFT:
-      if(m_visibleArea.left){
-      m_visibleArea.left--;
-      m_posX++;
-      return true;
-      }
-      break;
-  }
+
+      m_route.pop(); // возможных ходов нет, переходим к следующему элементу
+    }
 
   return false;
 }
 
-char Mouse::getSym() const
+char Mouse::getSym() const // возвращаем символ, как рисовать объект на экране
 {
- return MOUSE_SYM;
+  return MOUSE_SYM;
 }
 
